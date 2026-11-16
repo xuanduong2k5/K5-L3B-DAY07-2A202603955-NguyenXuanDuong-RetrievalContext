@@ -38,6 +38,15 @@ class BaselineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate(self.chunks, [{**self.q, 'gold': [wrong]}])
 
+    def test_evidence_matching_normalizes_pdf_line_breaks_and_soft_hyphens(self):
+        source = chunk('pdf', 'Equidistribu\u00adtion and mathe-\nmatical curves')
+        evidence = {
+            'source_id': 'doc',
+            'page': 1,
+            'evidence': 'Equidistribution and mathematical curves',
+        }
+        self.assertTrue(hit(source, [evidence]))
+
     def test_budget_dedup_and_empty_query(self):
         context, ids = pack_context([self.chunks[0], self.chunks[0]], 800)
         self.assertEqual(ids, ['a'])

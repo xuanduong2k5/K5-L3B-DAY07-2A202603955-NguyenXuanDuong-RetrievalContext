@@ -1,0 +1,34 @@
+[
+  {
+    "id": "no-evidence-dev-1",
+    "split": "dev",
+    "question": "Which vector database and embedding model do the authors use for semantic search?",
+    "answerable": false,
+    "expected_behavior": "search_and_abstain",
+    "absence_reason": "The source is a mathematics paper and does not describe a semantic-search system."
+  },
+  {
+    "id": "no-evidence-dev-2",
+    "split": "dev",
+    "question": "What retrieval benchmark Hit@3 score does the paper report?",
+    "answerable": false,
+    "expected_behavior": "search_and_abstain",
+    "absence_reason": "The source does not evaluate document retrieval or report Hit@3."
+  },
+  {
+    "id": "no-evidence-test-1",
+    "split": "test",
+    "question": "Which tool-calling language model was used to answer questions about the paper?",
+    "answerable": false,
+    "expected_behavior": "search_and_abstain",
+    "absence_reason": "The source does not describe an AI question-answering agent or tool-calling model."
+  },
+  {
+    "id": "no-evidence-test-2",
+    "split": "test",
+    "question": "What is the paper's citation-validity rate for answers grounded in retrieved passages?",
+    "answerable": false,
+    "expected_behavior": "search_and_abstain",
+    "absence_reason": "The source does not report RAG citation or grounding metrics."
+  }
+]

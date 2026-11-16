@@ -56,6 +56,56 @@ python3 starter/agent_metrics.py --cases <cases.json> --traces <traces.json> --r
 
 Thay đường dẫn trong `< >`. Script tổng hợp nhãn bạn đã chấm, không tự đánh giá nội dung. Mẫu số bằng 0 nghĩa là không áp dụng. Lỗi kết nối được báo riêng, không tính vào chất lượng; giữ trace và nhãn để đối chiếu.
 
+## 5. Chạy ba phương pháp với kho Day 6
+
+`day6_retrieval.py` đọc database URL và embedding model từ `starter/.env` của Day 6, dùng nguyên bảng `day6_chunks`, không tạo index giả hoặc sửa schema. Mặc định dùng chiến lược `C`, đã được chọn trên dev ở Day 6. Bộ truy xuất có:
+
+- `dense`: embedding `sentence-transformers/all-MiniLM-L6-v2` (384 chiều) và tìm cosine bằng pgvector Day 6.
+- `tfidf`: TF-IDF trên các chunk của cùng chiến lược.
+- `hybrid`: hợp nhất dense và TF-IDF bằng Reciprocal Rank Fusion (RRF, hằng số 60); mặc định lấy tối đa 12 ứng viên mỗi phương pháp rồi xuất top-3.
+
+Cài phụ thuộc nếu cần. Thay `$day6` bằng đường dẫn starter Day 6 thật:
+
+```powershell
+python -m pip install -r starter\requirements.txt
+$day6 = "..\K5-L3B-DAY06-NguyenXuanDuong-2A202603955-DataIngestion\starter"
+Set-Location $day6
+docker compose -p day6_student_starter up -d --wait
+python -m src.run
+Set-Location -
+```
+
+Chạy cùng benchmark Day 6 trên dev cho từng phương pháp:
+
+```powershell
+$questions = Join-Path $day6 "benchmark\questions.json"
+python starter\benchmark_retrieval.py --day6-starter $day6 --questions $questions --split dev --method dense --output starter\results\dense-dev
+python starter\benchmark_retrieval.py --day6-starter $day6 --questions $questions --split dev --method tfidf --output starter\results\tfidf-dev
+python starter\benchmark_retrieval.py --day6-starter $day6 --questions $questions --split dev --method hybrid --output starter\results\hybrid-dev
+```
+
+Chạy agent dùng GPT-4 qua OpenAI Chat Completions. Điền key trong file `.env` ở thư mục gốc; file này đã được Git ignore:
+
+```powershell
+# .env
+OPENAI_API_KEY=điền_key_cục_bộ_của_bạn
+OPENAI_MODEL=gpt-4
+LLM_BASE_URL=https://api.openai.com/v1
+
+# Chạy tại workspace root sau khi lưu .env
+python starter\run_agent_benchmark.py --day6-starter $day6 --day6-questions $questions --abstentions data\abstention_questions.json --split dev --method hybrid --output starter\results\agent-hybrid-dev
+```
+
+Có thể đặt `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL` để dùng endpoint OpenAI-compatible khác. Câu hỏi và các chunk context sẽ được gửi đến provider khi chạy agent; xác nhận quyền sử dụng trước. Không commit `.env` hoặc gửi API key trong chat. Đầu ra trong `starter/results/` gồm `traces.json`, `cases.json` và `run.json`; thư mục này bị Git ignore.
+
+So sánh ít nhất ba phương pháp và thử ít nhất hai cấu hình trên dev trước; ghi giả thuyết, đọc lỗi và chốt cấu hình. Chỉ sau đó chạy baseline và cấu hình chọn trên test. Benchmark agent có 20 câu Day 6 có đáp án cùng bốn câu không có evidence ở `data/abstention_questions.json` (15+2 dev, 5+2 test). Script chỉ chấm retrieval trên câu có đáp án, không đưa `gold` hay đáp án vào agent. Nhãn `reviews.json` cho agent phải do người đọc trace, context và nguồn tự chấm rồi mới chạy `agent_metrics.py`.
+
+Chạy toàn bộ test unit:
+
+```powershell
+python -m unittest discover -s tests -v
+```
+
 ## Lưu ý
 
 TF-IDF dùng cách tách từ đơn giản. `baseline.py` dùng mặc định context budget 800 ký tự, gồm cả nguồn; chunk không vừa bị bỏ. Bạn có thể chọn cách khác. File kết quả cùng tên sẽ bị ghi đè. `starter/data/` và `starter/results/` không được Git theo dõi mặc định; nếu được phép chia sẻ, dùng `git add -f <đường-dẫn>`, hoặc ghi cách tái tạo. Không nộp dữ liệu mật và secret.

@@ -7,3 +7,5 @@ Các file `example_*.json` chỉ minh họa định dạng, không đủ để n
 - **Câu thiếu evidence:** `id`, `split`, `question`, `answerable: false`, `expected_behavior: "search_and_abstain"`, `absence_reason`. Xem `agent_cases_example.json`.
 
 Không đưa `gold` hoặc nhãn đáp án vào model và retrieval tool. Ghi nguồn dữ liệu và quyền sử dụng. Cách chuyển một số định dạng Day 6: [starter/README.md](../starter/README.md).
+
+`abstention_questions.json` bổ sung bốn câu không có evidence cho corpus Day 6: hai câu dev và hai câu test. Các chủ đề được kiểm tra trên toàn văn PDF cục bộ; hãy đọc trace và xác nhận nhãn từ chối thủ công trước khi báo cáo.
